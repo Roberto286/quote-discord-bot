@@ -1,24 +1,33 @@
 require('dotenv').config(); //to start process from .env file
 const { request } = require('undici');
-
 const { Client, Intents } = require('discord.js');
 const client = new Client({
   intents: ['GUILDS', 'GUILD_MESSAGES'],
 });
+const uknownCommand =
+  'Mi dispiace non conosco il comando che mi hai dato, digita /help per la lista dei comandi';
 
-const isCommandRandomQuote = (msg) => {
-  return msg.content === '/random';
+const commands = ['/help', '/random', '/random nome'];
+
+let commandList = 'Ecco la lista dei comandi accettati: \n';
+
+const printCommandList = () => {
+  commands.forEach((command) => (commandList += command + '\n'));
+  return commandList;
 };
 
-async function getJSONResponse(body) {
-  let fullBody = '';
+const findCommand = (msg) => {
+  switch (msg) {
+    case '/help':
+      return printCommandList();
 
-  for await (const data of body) {
-    fullBody += data.toString();
+    case '/random':
+      return console.log();
+
+    default:
+      return uknownCommand;
   }
-
-  return JSON.parse(fullBody);
-}
+};
 
 client.once('ready', () => {
   console.log('BOT IS ONLINE'); //message when bot is online
@@ -26,14 +35,24 @@ client.once('ready', () => {
 
 client.login(process.env.TOKEN);
 
-// client.on('messageCreate', async (message) => {
-//   if (isCommandRandomQuote(message)) {
-//     const quoteResult = await request(
-//       'http://api.robertosaliola.eu/quotes/random'
-//     );
-//     const quoteJSON = await getJSONResponse(quoteResult.body);
+client.on('messageCreate', async (message) => {
+  if (message.content[0] === '/') {
+    message.reply(findCommand(message.content));
+  }
+});
 
-//     console.log(quoteJSON);
-//     message.reply(`${JSON.stringify(quoteJSON[0].quoteText)}`);
+// const formatQuote = (quote) => {
+//   return `${JSON.stringify(quote.quoteText)} ~ ${JSON.stringify(
+//     quote.authorName
+//   )} ~ ${JSON.stringify(quote.date)}`;
+// };
+
+// async function getJSONResponse(body) {
+//   let fullBody = '';
+
+//   for await (const data of body) {
+//     fullBody += data.toString();
 //   }
-// });
+
+//   return JSON.parse(fullBody);
+// }
