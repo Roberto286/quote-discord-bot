@@ -11,9 +11,34 @@ const commands = ['/help', '/random', '/random nome'];
 
 let commandList = 'Ecco la lista dei comandi accettati: \n';
 
+const apiURL = 'http://api.robertosaliola.eu/quotes';
+
+let quoteResult;
+
 const printCommandList = () => {
   commands.forEach((command) => (commandList += command + '\n'));
   return commandList;
+};
+const formatQuote = (quote) => {
+  return `${JSON.stringify(quote.quoteText)} ~ 
+  ${JSON.stringify(quote.authorName)} ~ 
+  ${JSON.stringify(quote.date)}`;
+};
+
+const getJSONResponse = async (body) => {
+  let fullBody = '';
+
+  for await (const data of body) {
+    fullBody += data.toString();
+  }
+
+  return JSON.parse(fullBody);
+};
+
+const getRandomQuote = async () => {
+  const quoteReqRes = await request(apiURL + '/random');
+  console.log(apiURL + '/random');
+  return await getJSONResponse(quoteReqRes.body);
 };
 
 const findCommand = (msg) => {
@@ -22,7 +47,10 @@ const findCommand = (msg) => {
       return printCommandList();
 
     case '/random':
-      return console.log();
+      return getRandomQuote().then((quote) => {
+        // console.log(typeof quote);
+        return formatQuote(quote);
+      });
 
     default:
       return uknownCommand;
@@ -41,18 +69,3 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-// const formatQuote = (quote) => {
-//   return `${JSON.stringify(quote.quoteText)} ~ ${JSON.stringify(
-//     quote.authorName
-//   )} ~ ${JSON.stringify(quote.date)}`;
-// };
-
-// async function getJSONResponse(body) {
-//   let fullBody = '';
-
-//   for await (const data of body) {
-//     fullBody += data.toString();
-//   }
-
-//   return JSON.parse(fullBody);
-// }
