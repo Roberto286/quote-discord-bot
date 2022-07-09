@@ -5,7 +5,7 @@ const client = new Client({
   intents: ['GUILDS', 'GUILD_MESSAGES'],
 });
 const token = process.env.TOKEN;
-const uknownCommand =
+const unknownCommand =
   'Mi dispiace non conosco il comando che mi hai dato, digita /help per la lista dei comandi';
 
 const commands = ['/help', '/random', '/random nome'];
@@ -14,15 +14,15 @@ let commandList = 'Ecco la lista dei comandi accettati: \n';
 
 const baseApiURL = 'http://api.robertosaliola.eu/quotes';
 
-
 const printCommandList = () => {
   commands.forEach((command) => (commandList += command + '\n'));
   return commandList;
 };
 const formatQuote = (quote) => {
-  return `${JSON.stringify(quote.quoteText)} ~ 
-  ${JSON.stringify(quote.authorName)} ~ 
-  ${JSON.stringify(quote.date)}`;
+  console.log(quote['quote'][0].quoteText);
+  return ` ${quote['quote'][0].quoteText} ~
+  ${quote['quote'][0].authorName} ~
+  ${quote['quote'][0].date}`;
 };
 
 
@@ -36,17 +36,18 @@ const getRandomQuote = async () => {
   }
 };
 
-const findCommand = (msg) => {
-  switch (msg) {
+const findCommandAndReply = (msg) => {
+  switch (msg.content) {
     case '/help':
-      return printCommandList();
+      return msg.reply(printCommandList()); 
 
     case '/random':
-      const data = getRandomQuote().then((data) => {console.log(data);return data});
-      return formatQuote(data);
-
+      return getRandomQuote().then((data) => {
+        msg.reply(formatQuote(data));                      
+      })
+               
     default:
-      return uknownCommand;
+      return msg.reply(unknownCommand);
   }
 };
 
@@ -57,9 +58,9 @@ client.once('ready', () => {
 client.login(token);
 
 
-client.on('messageCreate', async (message) => {
+client.on('messageCreate', (message) => {
   if (message.content[0] === '/') {
-    message.reply(findCommand(message.content));
+    findCommandAndReply(message);
   }
 });
 
