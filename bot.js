@@ -53,7 +53,7 @@ const findCommand = (msg) => {
 client.once('ready', () => {
   console.log('BOT IS ONLINE'); //message when bot is online
 });
-console.log(token);
+
 client.login(token);
 
 
